@@ -55,3 +55,5 @@ async def question_math(call: types.CallbackQuery, state: FSMContext):
         await call.message.answer("Savollar tugadi", reply_markup=def_btn.menu)  # savollar tugadi.
         await state.finish()
     await call.answer(cache_time=60)
+
+
