@@ -4,8 +4,8 @@ questions = Question()
 
 
 class Queue:
-    def __init__(self):
-        self.items = questions.objects_all()
+    def __init__(self, category_id):
+        self.items = questions.objects_all(cat_id=category_id)
 
     def isEmpty(self):
         return self.items == []

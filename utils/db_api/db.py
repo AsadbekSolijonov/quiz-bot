@@ -58,9 +58,9 @@ class Question(DatabaseConnect):
         with self.conn:
             self.curr.execute(sql_query)
 
-    def objects_all(self):
-        sql_query = """
-        SELECT id, question, explanation, category_id FROM question;
+    def objects_all(self, cat_id):
+        sql_query = f"""
+        SELECT id, question, explanation, category_id FROM question WHERE category_id == {cat_id};
         """
         datas = self.curr.execute(sql_query).fetchall()
         return datas

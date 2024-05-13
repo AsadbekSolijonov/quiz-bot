@@ -5,10 +5,10 @@ from aiogram.dispatcher import FSMContext
 from keyboards.inline.buttons import InlineButton
 from loader import dp
 from aiogram import types
-from aiogram.types import ReplyKeyboardRemove
+from aiogram.types import ReplyKeyboardRemove, CallbackQuery
 
 from states.quiz import QuizState
-from utils.db_api.db import QuestionCategory
+from utils.db_api.db import QuestionCategory, Question
 from handlers.users.algorithm import Queue
 from utils.db_api.db import Answer
 from keyboards.default.buttons import DefaultButton
@@ -17,8 +17,8 @@ def_btn = DefaultButton()
 answer = Answer()
 in_btn = InlineButton()
 
+
 # def questions():
-questions = Queue()
 
 
 # return my_questions
@@ -31,16 +31,30 @@ def subjects():
     return my_subjects
 
 
-@dp.callback_query_handler(text=subjects().append('next'), state=QuizState.quiz)
+@dp.callback_query_handler(text=subjects())
+async def quiz_subjects(call: CallbackQuery, state: FSMContext):
+    category_name = call.data
+    category_id = QuestionCategory().get_category_id(category_name)
+    # logging.info(category_id)
+    questions = Queue(category_id=category_id)
+    async with state.proxy() as data:
+        data["quiz"] = questions
+
+    await call.message.answer(f"{call.data} savollar: ", reply_markup=ReplyKeyboardRemove())
+    if not questions:
+        await call.message.answer("Savollar tez orada qo'shiladi")
+    else:
+        await QuizState.quiz.set()
+
+
+@dp.callback_query_handler(state=QuizState.quiz)
+@dp.callback_query_handler(text=['next'], state=QuizState.quiz)
 async def question_math(call: types.CallbackQuery, state: FSMContext):
     if call.data != 'next':
         await call.message.delete()
-        await call.message.answer(f"{call.data} savollar: ", reply_markup=ReplyKeyboardRemove())
 
-    category_id = QuestionCategory().get_category_id(name=call.data)
     async with state.proxy() as data:
         obj = data.get('quiz').dequeue()
-        # obj = filter(lambda datas: datas[3] == str(category_id), data.get('quiz')).dequeue()
 
     if obj:
         question = obj[1]  # Savol

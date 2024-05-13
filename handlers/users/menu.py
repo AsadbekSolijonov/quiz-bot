@@ -11,9 +11,6 @@ in_btn = InlineButton()
 
 
 @dp.message_handler(text='Savollar')
-async def show_menu(message: types.Message, state: FSMContext):
+async def show_menu(message: types.Message):
     await message.answer("Bo'limlardan birini tanlang:", reply_markup=in_btn.show_categories)
-    async with state.proxy() as data_file:
-        data_file['quiz'] = Queue()
-    await QuizState.quiz.set()
 
