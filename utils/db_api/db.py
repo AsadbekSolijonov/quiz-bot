@@ -1,6 +1,7 @@
 import os
 import sqlite3
 from abc import ABC, abstractmethod
+from pathlib import Path
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -34,6 +35,13 @@ class QuestionCategory(DatabaseConnect):
         """
         datas = self.curr.execute(sql_query).fetchall()
         return datas
+
+    def get_category_id(self, name):
+        sql_query = f"""
+        SELECT id FROM question_category WHERE category_name LIKE '{name}'
+        """
+        data = self.curr.execute(sql_query).fetchone()
+        return data[0] if data else None
 
 
 class Question(DatabaseConnect):

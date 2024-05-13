@@ -34,15 +34,19 @@ def subjects():
 @dp.callback_query_handler(text=subjects().append('next'), state=QuizState.quiz)
 async def question_math(call: types.CallbackQuery, state: FSMContext):
     if call.data != 'next':
-        await call.message.answer("Savollar: ", reply_markup=ReplyKeyboardRemove())
+        await call.message.delete()
+        await call.message.answer(f"{call.data} savollar: ", reply_markup=ReplyKeyboardRemove())
+
+    category_id = QuestionCategory().get_category_id(name=call.data)
     async with state.proxy() as data:
         obj = data.get('quiz').dequeue()
+        # obj = filter(lambda datas: datas[3] == str(category_id), data.get('quiz')).dequeue()
 
     if obj:
         question = obj[1]  # Savol
         explanation = obj[2]  # Javobni tushuntirish
         correct_id = answer.get(question_id=obj[0])[-1]  # to'g'ri javob
-        options = [option for option in answer.get(question_id=obj[0])][2:5]  # variantlar
+        options = [option for option in answer.get(question_id=obj[0])][2:5]  # variantlar a, b, c
 
         await call.message.answer_poll(question=question,
                                        options=options,
@@ -52,8 +56,7 @@ async def question_math(call: types.CallbackQuery, state: FSMContext):
         logging.info(call.message)
         await QuizState.quiz.set()
     else:
-        await call.message.answer("Savollar tugadi", reply_markup=def_btn.menu)  # savollar tugadi.
+        await call.message.answer("Tez orada qolgan savollar qo'shiladi!",
+                                  reply_markup=def_btn.menu)  # savollar tugadi.
         await state.finish()
     await call.answer(cache_time=60)
-
-
