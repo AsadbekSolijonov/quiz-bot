@@ -18,12 +18,6 @@ answer = Answer()
 in_btn = InlineButton()
 
 
-# def questions():
-
-
-# return my_questions
-
-
 def subjects():
     categories = QuestionCategory()
     subjects_all = categories.objects_all()
@@ -31,19 +25,34 @@ def subjects():
     return my_subjects
 
 
-@dp.callback_query_handler(text=subjects())
-async def quiz_subjects(call: CallbackQuery, state: FSMContext):
+@dp.callback_query_handler(text=subjects(), state=QuizState.subjects)
+async def quiz_subjects(call: types.CallbackQuery, state: FSMContext):
     category_name = call.data
     category_id = QuestionCategory().get_category_id(category_name)
-    # logging.info(category_id)
+
     questions = Queue(category_id=category_id)
     async with state.proxy() as data:
         data["quiz"] = questions
 
-    await call.message.answer(f"{call.data} savollar: ", reply_markup=ReplyKeyboardRemove())
-    if not questions:
+    if not questions.dequeue():
         await call.message.answer("Savollar tez orada qo'shiladi")
+        await state.finish()
     else:
+        await call.message.answer(f"{call.data} savollar: ", reply_markup=ReplyKeyboardRemove())
+        async with state.proxy() as data:
+            obj = data.get('quiz').dequeue()
+
+        if obj:
+            question = obj[1]  # Savol
+            explanation = obj[2]  # Javobni tushuntirish
+            correct_id = answer.get(question_id=obj[0])[-1]  # to'g'ri javob
+            options = [option for option in answer.get(question_id=obj[0])][2:5]  # variantlar a, b, c
+
+            await call.message.answer_poll(question=question,
+                                           options=options,
+                                           correct_option_id=correct_id,
+                                           explanation=explanation,
+                                           type="quiz", reply_markup=in_btn.next_btn)  # savol yuborish
         await QuizState.quiz.set()
 
 

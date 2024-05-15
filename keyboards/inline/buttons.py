@@ -1,3 +1,5 @@
+import logging
+
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from utils.db_api.db import QuestionCategory
 
@@ -14,13 +16,14 @@ class InlineButton:
         if categories_button:
             for category in categories_button:
                 btn = InlineKeyboardButton(category[0], callback_data=category[0].lower())
+                logging.info(btn)
                 buttons.append(btn)
         else:
             btn = InlineKeyboardButton("Savollar mavjud emas")
             buttons.append(btn)
 
         my_btn.add(*buttons)
-
+        logging.info(my_btn)
         return my_btn
 
     @property
