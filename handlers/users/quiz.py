@@ -54,6 +54,7 @@ async def quiz_subjects(call: types.CallbackQuery, state: FSMContext):
                                            explanation=explanation,
                                            type="quiz", reply_markup=in_btn.next_btn)  # savol yuborish
         await QuizState.quiz.set()
+    await call.answer(cache_time=60)
 
 
 @dp.callback_query_handler(state=QuizState.quiz)
